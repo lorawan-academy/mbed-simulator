@@ -1,3 +1,15 @@
+/* Payload formatting
+
+function Decoder(bytes, port) {
+  var temperature = ((bytes[0] << 8) | bytes[1]) / 100;
+
+  return {
+    temperature: temperature,
+  }
+}
+*/
+
+
 #include "mbed.h"
 #include "mbed_trace.h"
 #include "mbed_events.h"
@@ -25,7 +37,6 @@ static uint8_t APP_KEY[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0
 // Peripherals (LoRa radio, temperature sensor and button)
 SX1276_LoRaRadio radio(D11, D12, D13, D10, A0, D2, D3, D4, D5, D8, D9, NC, NC, NC, NC, A4, NC, NC);
 Sht31 sht31(I2C_SDA, I2C_SCL);
-InterruptIn btn(BUTTON1);
 
 // EventQueue is required to dispatch events around
 static EventQueue ev_queue;
@@ -40,7 +51,7 @@ static lorawan_app_callbacks_t callbacks;
 static void lora_event_handler(lorawan_event_t event);
 
 //every interval, the temperature is checked, only when the difference is larger than the defined value, a message is sent
-static void check_temp(){
+static void check_sensor(){
     uint8_t tx_buffer[BUFFER_SIZE] = { 0 };
     static int stored_temperature=0; // latest temperature sent over LoRaWAN
     float temp=sht31.readTemperature();
@@ -65,7 +76,7 @@ static void check_temp(){
         }
         printf("%d bytes scheduled for transmission\n", retcode);
     }
-    ev_queue.call_in(TX_INTERVAL, check_temp);
+    ev_queue.call_in(TX_INTERVAL, check_sensor);
 }
 
 
@@ -146,7 +157,7 @@ static void lora_event_handler(lorawan_event_t event) {
     switch (event) {
         case CONNECTED:
             printf("Connection - Successful\n");
-            ev_queue.call_in(TX_INTERVAL, check_temp);
+            ev_queue.call_in(TX_INTERVAL, check_sensor);
             break;
         case DISCONNECTED:
             ev_queue.break_dispatch();
