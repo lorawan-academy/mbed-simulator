@@ -15,8 +15,6 @@ static uint8_t APP_KEY[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0
 
 // Peripherals (LoRa radio, temperature sensor and button)
 SX1276_LoRaRadio radio(D11, D12, D13, D10, A0, D2, D3, D4, D5, D8, D9, NC, NC, NC, NC, A4, NC, NC);
-Sht31 sht31(I2C_SDA, I2C_SCL);
-InterruptIn btn(BUTTON1);
 
 // EventQueue is required to dispatch events around
 static EventQueue ev_queue;
